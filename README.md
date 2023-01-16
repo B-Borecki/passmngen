@@ -1,2 +1,2 @@
 # passmngen
-A simple password manager-generator working on linux
+Primitive password manager-generator written in C working on linux.
