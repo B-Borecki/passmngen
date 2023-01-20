@@ -24,8 +24,33 @@ int path_exists() {
     }
     return 0;
 }
-int main(){
+
+void create_p455() {
+    char path[255] = {'\0'};
+    printf("Enter the path where the password file should be located or don't write anything to leave default path: ");
+    scanf("%[^\n]", path);
+    if(path[0] == '\0') {
+        FILE *PATH = fopen("PATH","w");
+        fprintf(PATH, "%s", ".pass/P455");
+        fclose(PATH);
+    }
+
+}
+int main(int argc, char *argv[]){
+    if(argc > 1 && argv[1][1] == 'c') {
+        create_p455();
+        system("cat PATH");
+    }
     int exist = path_exists();
-    printf("%d", exist);
+    if(exist % 2 != 0) return 1;
+    if(exist == 2) {
+        create_p455();
+        system("cat PATH");
+    }
+
+
+
+
+
     return 0;
 }
