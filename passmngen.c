@@ -47,18 +47,22 @@ void create_p455() {
     }
     fclose(PATH);
     //creating password file
-    char command[255] = "cd ";
-    strcat(command,path);
-    strcat(command,"; mkdir .pass");
-    strcat(command,"; chmod 700 .pass");
-    system(command);
+    char command1[255] = "cd ";
+    strcat(command1,path);
+    strcat(command1,"; mkdir .pass; chmod 700 .pass");
+    system(command1);
+    char command2[255] = "cd ";
+    strcat(command2,path);
+    strcat(command2,"/.pass; touch P455; chmod 600 P455");
+    system(command2);
+
 }
 int main(int argc, char *argv[]){
     FILE *path = fopen("PATH", "r");
     //checking if PATH file exists
     if(path_file_exists(path) == 1) return 1;
     //creating new password file if user run program with -c option or PATH file is empty
-    if((argc > 1 && argv[1][1] == 'c') || path_empty(path) == 1 ) {create_p455();}
+    if((argc > 1 && strcmp(argv[1],"create") == 0) || path_empty(path) == 1 ) {create_p455();}
     //checking if PATH file stores property path to password file
     if(property_path(path) == 1) return 1;
 
