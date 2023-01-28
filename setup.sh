@@ -1,9 +1,16 @@
 #!/bin/bash
 Help() {
-    echo "pokaż dupcię"
+    echo "Generate password for the given LOGIN/E-MAIL and WEBSITE or find this password in manager."
+    echo "Usage:                passmngen LOGIN/E-MAIL WEBSITE"
+    echo "   or:                passmngen [-c|h]"
+    echo
+    echo "Options:"
+    echo "      c - Create password file"
+    echo "      h - Print this Help"
+    echo
 }
 Install() {
-    cp setup.sh ~/.local/bin/passmngen
+    mv setup.sh ~/.local/bin/passmngen
 }
 
 while getopts ":chi" option; do
@@ -26,5 +33,9 @@ while getopts ":chi" option; do
 done
 
 gcc -o passmngen passmngen.c
-./passmngen
+if(("$#" != "2")); then
+    echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help "
+else
+    ./passmngen "$1" "$2"
+fi
 rm passmngen

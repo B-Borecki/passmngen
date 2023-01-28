@@ -2,6 +2,47 @@
 #include <stdlib.h>
 #include <string.h>
 
+void put_to_P455(char path[], char *website, char *mail) {
+    FILE *P455 = fopen(path, "ab");
+    fseek(P455, 0, SEEK_END);
+    char password[255];
+    printf("Enter new password: ");
+    scanf("%s", password);
+    fprintf(P455, "\n%s %s %s", website, mail, password);
+}
+
+int search_password(char path[], char *website, char *mail) {
+    FILE *P455 = fopen(path, "r");
+    int len1 = strlen(website);
+    int len2 = strlen(mail);
+    while (!feof(P455)) {
+        int c = fgetc(P455);
+        if (c == EOF) break;
+        if (c == website[0]) {
+            int index = 0;
+            while(c == website[index]) {
+                index++;
+                c = fgetc(P455);
+            }
+            if(index == len1) {
+                c = fgetc(P455);
+                index = 0;
+                while(c == mail[index]) {
+                    index++;
+                    c = fgetc(P455);
+                }
+                if(index == len2) {
+                    char password[255];
+                    fscanf(P455, "%[^\n]", password);
+                    printf("%s", password);
+                    return 0;
+                }
+            }
+        }
+    }
+    return 1;
+}
+
 int path_file_exists(FILE *path) {
     if (path == NULL){
         printf("Error! opening PATH file\nCreate PATH file with rw permission for root or reinstall Passmngen");
@@ -10,11 +51,7 @@ int path_file_exists(FILE *path) {
     return 0;
 }
 
-int property_path(FILE *path_pointer) {
-    fseek(path_pointer, 0, SEEK_SET);
-    char path[255];
-    fscanf(path_pointer, "%[^\n]", path);
-    strcat(path, "/.pass/P455");
+int property_path(char path[]) {
     FILE *source;
     source = fopen(path, "r");
     if (source == NULL){
@@ -27,6 +64,7 @@ int property_path(FILE *path_pointer) {
 int path_empty(FILE *path) {
     fseek(path, 0, SEEK_END);
     int size = ftell(path);
+    fseek(path, 0, SEEK_SET);
     if (size == 0) {
         return 1;
     }
@@ -58,13 +96,25 @@ void create_p455() {
 
 }
 int main(int argc, char *argv[]){
-    FILE *path = fopen("PATH", "r");
+    FILE *PATH = fopen("PATH", "r");
     //checking if PATH file exists
-    if(path_file_exists(path) == 1) return 1;
+    if(path_file_exists(PATH) == 1) return 1;
     //creating new password file if user run program with -c option or PATH file is empty
-    if((argc > 1 && strcmp(argv[1],"create") == 0) || path_empty(path) == 1 ) {create_p455();}
+    if((argc == 2 && strcmp(argv[1],"create") == 0) || path_empty(PATH) == 1 ){ create_p455(); return 0;}
     //checking if PATH file stores property path to password file
+    char path[255];
+    fscanf(PATH, "%[^\n]", path);
+    strcat(path,"/.pass/P455");
     if(property_path(path) == 1) return 1;
+    if(argc == 3 && search_password(path, argv[1], argv[2]) == 0) return 0;
+    else {
+        char ans;
+        printf("Password was not found in the password file. Do you want to create password in %s for %s? [y/N]: ", argv[1], argv[2]);
+        scanf("%c", &ans);
+        if(ans != 'y' && ans != 'Y') return 0;
+        put_to_P455(path, argv[1], argv[2]);
+    }
+
 
     return 0;
 }
