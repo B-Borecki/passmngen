@@ -1,6 +1,6 @@
 #!/bin/bash
 Help() {
-    echo "Generate password for the given LOGIN/E-MAIL and WEBSITE or find this password in manager."
+    echo "Create or generate password for the given LOGIN/E-MAIL and WEBSITE or find this password in manager."
     echo "Usage:                passmngen LOGIN/E-MAIL WEBSITE"
     echo "   or:                passmngen [-c|h]"
     echo
