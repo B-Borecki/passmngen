@@ -1,14 +1,56 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+void generate(char path[], char *mail, char *website) {
+    char password[14];
+    srand(time(NULL));
+    int check = 1;
+    while (check != 0) {
+        int small = 0, big = 0, special = 0, same = 0, nums = 0;
+        int i = 0;
+        int k;
+        while(i < 14) {
+            k = rand() % 126;
+            if (k < 33) continue;
+            if(k >= 65 && k <= 90) big++;
+            else if(k >= 97 && k <= 122) small++;
+            else if(k >= 48 && k <= 57) nums++;
+            else special++;
+            password[i] = (char) k;
+            i++;
+        }
+        if (!(14 == nums || big < 1 || small < 1 || nums < 1 || special < 1)) check = 0;
+    }
+    FILE *P455 = fopen(path, "ab");
+    fseek(P455, 0, SEEK_END);
+    fprintf(P455, "%s %s %s\n",mail, website, password);
+    fclose(P455);
+}
+
+int get_access(char path[]) {
+    FILE *pass = fopen(path, "r");
+    char password[255];
+    fscanf(pass, "%[^\n]",password);
+    char ans[255];
+    printf("Enter the password: ");
+    scanf("%s", ans);
+    getchar();
+    fclose(pass);
+    if(strcmp(ans, password) != 0) return 1;
+    return 0;
+
+}
 
 int check_pass(char password[]) {
     int ASCII[255] = {};
-    int small = 0, big = 0, special = 0, same = 0;
+    int small = 0, big = 0, special = 0, same = 0, nums = 0;
     for(int i = 0; i < strlen(password); i++) {
         int c = (int) password[i];
         if(c >= 65 && c <= 90) big++;
         else if(c >= 97 && c <= 122) small++;
+        else if(c >= 48 && c <= 57) nums++;
         else special++;
         ASCII[c]++;
         if(ASCII[c] > 1) same++;
@@ -16,68 +58,74 @@ int check_pass(char password[]) {
     int check = 0;
     if (strlen(password) < 8){check++; printf("Your password is too short");}
     else if(strlen(password)-same <= 3){check++; printf("Your password has too many same characters");}
+    else if(strlen(password) == nums){check++; printf("Your password has no letters");}
     else if(big < 1){check++; printf("Your password does not contain capital letters");}
     else if(small < 1){check++; printf("Your password does not contain lowercase letters");}
+    else if(nums < 1){check++; printf("Your password does not contain numbers");}
     else if(special < 1){check++; printf("Your password does not contain special characters");}
     char ans;
     if(check > 0) {
-        printf(".\nIT CAN BE DANGEROUS!!!\nIf you want to enter different password type \"y/Y\"\nor If you want to continue type \"n/N\": ");
+        printf(". IT CAN BE DANGEROUS!!!\n\nIf you want to create different password type \"y/Y\"\nor If you want to save this password type \"n/N\": ");
         getchar();
         scanf("%c", &ans);
         if(ans != 'n' && ans != 'N'){printf("\n"); return 1;}
-        printf("Your password is stored in manager");
+        printf("\n\nYour password is stored in manager");
     }
     else printf("Your password is safe and stored in manager");
     return 0;
 }
 
-void put_to_P455(char path[], char *website, char *mail) {
+void put_to_P455(char path[], char *mail, char *website) {
     FILE *P455 = fopen(path, "ab");
     fseek(P455, 0, SEEK_END);
     char password[255];
     int prop = 1;
+    //checking if given password is safe
     while (prop == 1) {
         printf("\nEnter new password: ");
         scanf("%s", password);
         printf("\n\n");
         prop = check_pass(password);
     }
-    fprintf(P455, "\n%s %s %s", website, mail, password);
+    fprintf(P455, "%s %s %s\n",mail, website, password);
+    fclose(P455);
 }
 
-int search_password(char path[], char *website, char *mail) {
+int search_password(char path[], char *mail, char *website) {
     FILE *P455 = fopen(path, "r");
-    int len1 = strlen(website);
-    int len2 = strlen(mail);
+    int len1 = strlen(mail);
+    int len2 = strlen(website);
+    //finding password for given mail and website
     while (!feof(P455)) {
         int c = fgetc(P455);
         if (c == EOF) break;
         if (c == '\n'){
             c = fgetc(P455);
-            if (c == website[0]) {
+            if (c == mail[0]) {
                 int index = 0;
-                while(c == website[index]) {
+                while(c == mail[index]) {
                     index++;
                     c = fgetc(P455);
                 }
                 if(index == len1) {
                     c = fgetc(P455);
                     index = 0;
-                    while(c == mail[index]) {
+                    while(c == website[index]) {
                         index++;
                         c = fgetc(P455);
                     }
-                    if(c >= 33) return 1;
-                    if(index == len2) {
+                    if(index == len2 && c < 33) {
                         char password[255];
                         fscanf(P455, "%[^\n]", password);
                         printf("%s", password);
+                        fclose(P455);
                         return 0;
                     }
                 }
             }
         }
     }
+    fclose(P455);
     return 1;
 }
 
@@ -94,8 +142,10 @@ int property_path(char path[]) {
     source = fopen(path, "r");
     if (source == NULL){
         printf("Error! opening password file\nModify PATH file or run the program with -c option to create a new password file");
+        fclose(source);
         return 1;
     }
+    fclose(source);
     return 0;
 }
 
@@ -131,6 +181,15 @@ void create_p455() {
     strcat(command2,path);
     strcat(command2,"/.pass; touch P455; chmod 600 P455");
     system(command2);
+    char password[255];
+    printf("Create a password for Passmngen to secure your future passwords (YOU MUST REMEMBER THIS PASSWORD TO ACCESS YOUR ACCOUNTS!!!): ");
+    scanf("%s", password);
+    char command3[255] = "echo ";
+    strcat(command3, password);
+    strcat(command3, " > ");
+    strcat(command3, path);
+    strcat(command3, "/.pass/P455");
+    system(command3);
 
 }
 int main(int argc, char *argv[]){
@@ -138,14 +197,18 @@ int main(int argc, char *argv[]){
     //checking if PATH file exists
     if(path_file_exists(PATH) == 1) return 1;
     //creating new password file if user run program with -c option or PATH file is empty
-    if((argc == 2 && strcmp(argv[1],"create") == 0) || path_empty(PATH) == 1 ){ create_p455(); return 0;}
+    if((argc == 2 && strcmp(argv[1],"create") == 0) || path_empty(PATH) == 1){ create_p455(); return 0;}
     //checking if PATH file stores property path to password file
     char path[255];
     fscanf(PATH, "%[^\n]", path);
     strcat(path,"/.pass/P455");
     if(property_path(path) == 1) return 1;
+    if(get_access(path) == 1) {
+        printf("\nWrong password");
+        return 1;
+    }
     if(argc == 3 && search_password(path, argv[1], argv[2]) == 0) return 0;
-    else {
+    else if(argc == 3) {
         char ans;
         printf("Password was not found in the password file. Do you want to create password in %s for %s? [y/N]: ", argv[2], argv[1]);
         scanf("%c", &ans);
@@ -153,7 +216,9 @@ int main(int argc, char *argv[]){
         printf("\n");
         put_to_P455(path, argv[1], argv[2]);
     }
-
+    if(argc == 4 && strcmp(argv[3],"generate") == 0) {
+        generate(path, argv[1], argv[2]);
+    }
 
     return 0;
 }
