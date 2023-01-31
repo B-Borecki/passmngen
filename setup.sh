@@ -20,9 +20,13 @@ Help() {
     echo "If you want to change the saved password to a securely generated one, first you need to remove the password from database by running the program with -d option and then you can run the program with -g option"
 }
 Install() {
-    mv setup.sh ~/.local/bin/passmngen
+    echo -n "cd " >> passmngen.sh
+    echo $PWD >> passmngen.sh
+    echo -n "./setup.sh" >> passmngen.sh
+    echo " \$1 \$2 \$3" >> passmngen.sh
+    chmod 700 passmngen.sh
+    mv passmngen.sh ~/.local/bin/passmngen
 }
-
 while getopts ":cdfghi" option; do
     case $option in
         c)
