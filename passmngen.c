@@ -3,6 +3,18 @@
 #include <string.h>
 #include <time.h>
 
+void delete(char path[], char *mail, char *website) {
+    char command[255] = "echo \"$(grep -v \"";
+    strcat(command, mail);
+    strcat(command, " ");
+    strcat(command, website);
+    strcat(command, " \" ");
+    strcat(command, path);
+    strcat(command, ")\" > ");
+    strcat(command, path);
+    system(command);
+}
+
 void generate(char path[], char *mail, char *website) {
     char password[14];
     srand(time(NULL));
@@ -26,6 +38,7 @@ void generate(char path[], char *mail, char *website) {
     FILE *P455 = fopen(path, "ab");
     fseek(P455, 0, SEEK_END);
     fprintf(P455, "%s %s %s\n",mail, website, password);
+    printf("The password is stored in the database");
     fclose(P455);
 }
 
@@ -34,7 +47,7 @@ int get_access(char path[]) {
     char password[255];
     fscanf(pass, "%[^\n]",password);
     char ans[255];
-    printf("Enter the password: ");
+    printf("Enter Passmngen authentication password: ");
     scanf("%s", ans);
     getchar();
     fclose(pass);
@@ -65,13 +78,13 @@ int check_pass(char password[]) {
     else if(special < 1){check++; printf("Your password does not contain special characters");}
     char ans;
     if(check > 0) {
-        printf(". IT CAN BE DANGEROUS!!!\n\nIf you want to create different password type \"y/Y\"\nor If you want to save this password type \"n/N\": ");
+        printf(". IT CAN BE DANGEROUS!!!\n\nIf you want to create different password type \"y/Y\"\nor If you want to save this unsafe password type \"n/N\": ");
         getchar();
         scanf("%c", &ans);
-        if(ans != 'n' && ans != 'N'){printf("\n"); return 1;}
-        printf("\n\nYour password is stored in manager");
+        if(ans != 'n' && ans != 'N'){printf("\n\n"); return 1;}
+        printf("\n\nYour password is stored in the database");
     }
-    else printf("Your password is safe and stored in manager");
+    else printf("Your password is safe and stored in the database");
     return 0;
 }
 
@@ -82,7 +95,7 @@ void put_to_P455(char path[], char *mail, char *website) {
     int prop = 1;
     //checking if given password is safe
     while (prop == 1) {
-        printf("\nEnter new password: ");
+        printf("Enter new password: ");
         scanf("%s", password);
         printf("\n\n");
         prop = check_pass(password);
@@ -91,7 +104,7 @@ void put_to_P455(char path[], char *mail, char *website) {
     fclose(P455);
 }
 
-int search_password(char path[], char *mail, char *website) {
+const char* search_password(char path[], char *mail, char *website) {
     FILE *P455 = fopen(path, "r");
     int len1 = strlen(mail);
     int len2 = strlen(website);
@@ -117,16 +130,16 @@ int search_password(char path[], char *mail, char *website) {
                     if(index == len2 && c < 33) {
                         char password[255];
                         fscanf(P455, "%[^\n]", password);
-                        printf("%s", password);
                         fclose(P455);
-                        return 0;
+                        char *pass = password;
+                        return pass;
                     }
                 }
             }
         }
     }
     fclose(P455);
-    return 1;
+    return "";
 }
 
 int path_file_exists(FILE *path) {
@@ -141,7 +154,7 @@ int property_path(char path[]) {
     FILE *source;
     source = fopen(path, "r");
     if (source == NULL){
-        printf("Error! opening password file\nModify PATH file or run the program with -c option to create a new password file");
+        printf("Error! opening password database\nModify PATH file or run \"passmngen -f\" to create a new database");
         fclose(source);
         return 1;
     }
@@ -161,7 +174,7 @@ int path_empty(FILE *path) {
 
 void create_p455() {
     char path[255] = {'\0'};
-    printf("Enter the path where the password file should be created or click Enter to leave default path (MAKE SURE THE PATH IS CORRECT!!!): ");
+    printf("Enter the path where the password database should be created or click Enter to leave default path (MAKE SURE THE PATH IS CORRECT!!!): ");
     scanf("%[^\n]", path);
     //writing password file path to PATH
     FILE *PATH = fopen("PATH","w+");
@@ -182,7 +195,7 @@ void create_p455() {
     strcat(command2,"/.pass; touch P455; chmod 600 P455");
     system(command2);
     char password[255];
-    printf("Create a password for Passmngen to secure your future passwords (YOU MUST REMEMBER THIS PASSWORD TO ACCESS YOUR ACCOUNTS!!!): ");
+    printf("Create an authentication password for Passmngen to secure password database (YOU MUST REMEMBER THIS PASSWORD TO BE ABLE TO ACCESS YOUR ACCOUNTS!!!): ");
     scanf("%s", password);
     char command3[255] = "echo ";
     strcat(command3, password);
@@ -204,20 +217,39 @@ int main(int argc, char *argv[]){
     strcat(path,"/.pass/P455");
     if(property_path(path) == 1) return 1;
     if(get_access(path) == 1) {
-        printf("\nWrong password");
+        printf("Wrong password, access denied");
         return 1;
     }
-    if(argc == 3 && search_password(path, argv[1], argv[2]) == 0) return 0;
+    printf("Correct password, access granted\n\n\n");
+    if(argc == 3 && strlen(search_password(path, argv[1], argv[2])) != 0) {
+        printf("Password: %s", search_password(path, argv[1], argv[2]));
+        return 0;
+    }
     else if(argc == 3) {
         char ans;
-        printf("Password was not found in the password file. Do you want to create password in %s for %s? [y/N]: ", argv[2], argv[1]);
+        printf("The password was not found in the database. Do you want to create password for %s on %s? [y/N]: ", argv[1], argv[2]);
         scanf("%c", &ans);
         if(ans != 'y' && ans != 'Y') return 0;
-        printf("\n");
+        printf("\n\n");
         put_to_P455(path, argv[1], argv[2]);
+        return 0;
+    }
+    if(argc == 4 && strcmp(argv[3],"change") == 0) {
+        delete(path, argv[1], argv[2]);
+        put_to_P455(path, argv[1], argv[2]);
+        return 0;
     }
     if(argc == 4 && strcmp(argv[3],"generate") == 0) {
+        if(strlen(search_password(path, argv[1], argv[2])) != 0) {
+            printf("Password already exists. If you need help run \"passmngen -h\"");
+            return 1;
+        }
         generate(path, argv[1], argv[2]);
+        return 0;
+    }
+    if(argc == 4 && strcmp(argv[3],"delete") == 0) {
+        delete(path, argv[1], argv[2]);
+        printf("The password for %s on %s has been removed from the database", argv[1], argv[2]);
     }
 
     return 0;

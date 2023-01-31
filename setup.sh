@@ -1,26 +1,49 @@
 #!/bin/bash
 Help() {
-    echo "Create or generate password for the given LOGIN/E-MAIL and WEBSITE or find this password in manager."
+    echo "Create or generate password for the given LOGIN/E-MAIL and WEBSITE or find this password in database."
     echo "Usage:                passmngen LOGIN/E-MAIL WEBSITE"
-    echo "   or:                passmngen [-c|h]"
-    echo "   or:                passmngen [-g] LOGIN/E-MAIL WEBSITE"
+    echo "   or:                passmngen [-f|h]"
+    echo "   or:                passmngen [-c|d|g] LOGIN/E-MAIL WEBSITE"
     echo
     echo "Options:"
-    echo "      c - Create password file"
-    echo "      g - Generate password"
+    echo "      f - For first use. Create password database "
     echo "      h - Print this Help"
+    echo "      c - Change the password in database for given LOGIN/E-MAIL and WEBSITE"
+    echo "      d - Remove the password from database for given LOGIN/E-MAIL and WEBSITE"
+    echo "      g - Generate the password for given LOGIN/E-MAIL and WEBSITE and save it in the database"
     echo
-    echo "For first use you need to create password file so you have to select -c option"
-    echo "If you want the program to print your password from manager, or you want to add new password to manager, select standard usage"
-    echo "If you want the program to generate a random secure password for you, select the -g option"
+    echo "Tutorial:"
+    echo "For first use you need to create password file so you have to run \"passmngen -f\""
+    echo "If you want the program to print your password from database, or you want to add new password to database, select standard usage without any options"
+    echo "If you want the program to generate a random secure password for given LOGIN/E-MAIL and WEBSITE and save it in the database, run program with -g option"
+    echo "If you want to change the saved password to a new password created by you, run program with -c option"
+    echo "If you want to change the saved password to a securely generated one, first you need to remove the password from database by running the program with -d option and then you can run the program with -g option"
 }
 Install() {
-    mv setup.sh /usr/local/bin/passmngen
+    mv setup.sh ~/.local/bin/passmngen
 }
 
-while getopts ":cghi" option; do
+while getopts ":cdfghi" option; do
     case $option in
         c)
+            gcc -o passmngen passmngen.c
+            if(("$#" != "3")); then
+                echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help "
+            else
+                ./passmngen "$2" "$3" change
+            fi
+            rm passmngen
+            exit;;
+        d)
+            gcc -o passmngen passmngen.c
+            if(("$#" != "3")); then
+                echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help"
+            else
+                ./passmngen "$2" "$3" delete
+            fi
+            rm passmngen
+            exit;;
+        f)
             gcc -o passmngen passmngen.c
             ./passmngen create
             rm passmngen
@@ -28,7 +51,7 @@ while getopts ":cghi" option; do
         g)
             gcc -o passmngen passmngen.c
             if(("$#" != "3")); then
-                echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help "
+                echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help"
             else
                 ./passmngen "$2" "$3" generate
             fi
