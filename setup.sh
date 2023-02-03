@@ -12,13 +12,14 @@ Help() {
     echo "      d - Remove the password from database for given LOGIN/E-MAIL and WEBSITE"
     echo "      g - Generate the password for given LOGIN/E-MAIL and WEBSITE and save it in the database"
     echo
-    echo "Tutorial:"
+    echo "Guide:"
     echo "For first use you need to create password file so you have to run \"passmngen -f\""
     echo "If you want the program to print your password from database, or you want to add new password to database, select standard usage without any options"
     echo "If you want the program to generate a random secure password for given LOGIN/E-MAIL and WEBSITE and save it in the database, run program with -g option"
     echo "If you want to change the saved password to a new password created by you, run program with -c option"
     echo "If you want to change the saved password to a securely generated one, first you need to remove the password from database by running the program with -d option and then you can run the program with -g option"
 }
+
 Install() {
     echo -n "cd " >> passmngen.sh
     echo $PWD >> passmngen.sh
@@ -27,6 +28,7 @@ Install() {
     chmod 700 passmngen.sh
     mv passmngen.sh ~/.local/bin/passmngen
 }
+
 while getopts ":cdfghi" option; do
     case $option in
         c)

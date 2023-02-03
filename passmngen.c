@@ -22,15 +22,15 @@ void generate(char path[], char *mail, char *website) {
     while (check != 0) {
         int small = 0, big = 0, special = 0, same = 0, nums = 0;
         int i = 0;
-        int k;
+        //int k;
         while(i < 14) {
-            k = rand() % 126;
+            int k = rand() % 126;
             if (k < 33) continue;
             if(k >= 65 && k <= 90) big++;
             else if(k >= 97 && k <= 122) small++;
             else if(k >= 48 && k <= 57) nums++;
             else special++;
-            password[i] = (char) k;
+            password[i] = k;
             i++;
         }
         if (!(14 == nums || big < 1 || small < 1 || nums < 1 || special < 1)) check = 0;
@@ -38,7 +38,7 @@ void generate(char path[], char *mail, char *website) {
     FILE *P455 = fopen(path, "ab");
     fseek(P455, 0, SEEK_END);
     fprintf(P455, "%s %s %s\n",mail, website, password);
-    printf("The password is stored in the database");
+    printf("\n\nThe password is stored in the database");
     fclose(P455);
 }
 
@@ -104,7 +104,7 @@ void put_to_P455(char path[], char *mail, char *website) {
     fclose(P455);
 }
 
-const char* search_password(char path[], char *mail, char *website) {
+void print_password(char path[], char *mail, char *website) {
     FILE *P455 = fopen(path, "r");
     int len1 = strlen(mail);
     int len2 = strlen(website);
@@ -130,16 +130,48 @@ const char* search_password(char path[], char *mail, char *website) {
                     if(index == len2 && c < 33) {
                         char password[255];
                         fscanf(P455, "%[^\n]", password);
-                        fclose(P455);
-                        char *pass = password;
-                        return pass;
+                        printf("\n\nYour password is: %s\n", password);
                     }
                 }
             }
         }
     }
     fclose(P455);
-    return "";
+}
+
+int search_password(char path[], char *mail, char *website) {
+    FILE *P455 = fopen(path, "r");
+    int len1 = strlen(mail);
+    int len2 = strlen(website);
+    //finding password for given mail and website
+    while (!feof(P455)) {
+        int c = fgetc(P455);
+        if (c == EOF) break;
+        if (c == '\n'){
+            c = fgetc(P455);
+            if (c == mail[0]) {
+                int index = 0;
+                while(c == mail[index]) {
+                    index++;
+                    c = fgetc(P455);
+                }
+                if(index == len1) {
+                    c = fgetc(P455);
+                    index = 0;
+                    while(c == website[index]) {
+                        index++;
+                        c = fgetc(P455);
+                    }
+                    if(index == len2 && c < 33) {
+                        fclose(P455);
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+    fclose(P455);
+    return 1;
 }
 
 int path_file_exists(FILE *path) {
@@ -220,14 +252,14 @@ int main(int argc, char *argv[]){
         printf("Wrong password, access denied");
         return 1;
     }
-    printf("Correct password, access granted\n\n\n");
-    if(argc == 3 && strlen(search_password(path, argv[1], argv[2])) != 0) {
-        printf("Password: %s", search_password(path, argv[1], argv[2]));
+    printf("Correct password, access granted\n");
+    if(argc == 3 && search_password(path, argv[1], argv[2]) == 0) {
+        print_password(path, argv[1], argv[2]);
         return 0;
     }
-    else if(argc == 3) {
+    if(argc == 3) {
         char ans;
-        printf("The password was not found in the database. Do you want to create password for %s on %s? [y/N]: ", argv[1], argv[2]);
+        printf("\n\nThe password was not found in the database. Do you want to create password for %s on %s? [y/N]: ", argv[1], argv[2]);
         scanf("%c", &ans);
         if(ans != 'y' && ans != 'Y') return 0;
         printf("\n\n");
@@ -240,8 +272,8 @@ int main(int argc, char *argv[]){
         return 0;
     }
     if(argc == 4 && strcmp(argv[3],"generate") == 0) {
-        if(strlen(search_password(path, argv[1], argv[2])) != 0) {
-            printf("Password already exists. If you need help run \"passmngen -h\"");
+        if(search_password(path, argv[1], argv[2]) == 0) {
+            printf("\n\nPassword already exists. If you need help run \"passmngen -h\"");
             return 1;
         }
         generate(path, argv[1], argv[2]);
@@ -249,7 +281,7 @@ int main(int argc, char *argv[]){
     }
     if(argc == 4 && strcmp(argv[3],"delete") == 0) {
         delete(path, argv[1], argv[2]);
-        printf("The password for %s on %s has been removed from the database", argv[1], argv[2]);
+        printf("\n\nThe password for %s on %s has been removed from the database", argv[1], argv[2]);
     }
 
     return 0;
