@@ -36,7 +36,7 @@ while getopts ":cdfghi" option; do
             if(("$#" != "3")); then
                 echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help "
             else
-                ./passmngen "$2" "$3" change
+                sudo ./passmngen "$2" "$3" change
             fi
             rm passmngen
             exit;;
@@ -45,13 +45,13 @@ while getopts ":cdfghi" option; do
             if(("$#" != "3")); then
                 echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help"
             else
-                ./passmngen "$2" "$3" delete
+                sudo ./passmngen "$2" "$3" delete
             fi
             rm passmngen
             exit;;
         f)
             gcc -o passmngen passmngen.c
-            ./passmngen create
+            sudo ./passmngen create
             rm passmngen
             exit;;
         g)
@@ -59,7 +59,7 @@ while getopts ":cdfghi" option; do
             if(("$#" != "3")); then
                 echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help"
             else
-                ./passmngen "$2" "$3" generate
+                sudo ./passmngen "$2" "$3" generate
             fi
             rm passmngen
             exit;;
@@ -79,6 +79,6 @@ gcc -o passmngen passmngen.c
 if(("$#" != "2")); then
     echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help "
 else
-    ./passmngen "$1" "$2"
+    sudo ./passmngen "$1" "$2"
 fi
 rm passmngen

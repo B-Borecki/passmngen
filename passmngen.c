@@ -224,7 +224,7 @@ void create_p455() {
     system(command1);
     char command2[255] = "cd ";
     strcat(command2,path);
-    strcat(command2,"/.pass; touch P455; chmod 600 P455");
+    strcat(command2,"/.pass; sudo touch P455; sudo chmod 600 P455");
     system(command2);
     char password[255];
     printf("Create an authentication password for Passmngen to secure password database (YOU MUST REMEMBER THIS PASSWORD TO BE ABLE TO ACCESS YOUR ACCOUNTS!!!): ");
@@ -268,6 +268,7 @@ int main(int argc, char *argv[]){
     }
     if(argc == 4 && strcmp(argv[3],"change") == 0) {
         delete(path, argv[1], argv[2]);
+        printf("\n\n");
         put_to_P455(path, argv[1], argv[2]);
         return 0;
     }
