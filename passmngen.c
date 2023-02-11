@@ -223,7 +223,7 @@ int get_access(char password[]) {
 int check_pass(char password[]) {
     int ASCII[255] = {};
     int small = 0, big = 0, special = 0, same = 0, nums = 0;
-    for(int i = 0; i < strlen(password); i++) {
+    for(int i = 0; i < (int)strlen(password); i++) {
         int c = (int) password[i];
         if(c >= 65 && c <= 90) big++;
         else if(c >= 97 && c <= 122) small++;
@@ -235,7 +235,7 @@ int check_pass(char password[]) {
     int check = 0;
     if (strlen(password) < 8){check++; printf("Your password is too short");}
     else if(strlen(password)-same <= 3){check++; printf("Your password has too many same characters");}
-    else if(strlen(password) == nums){check++; printf("Your password has no letters");}
+    else if((int)strlen(password) == nums){check++; printf("Your password has no letters");}
     else if(big < 1){check++; printf("Your password does not contain capital letters");}
     else if(small < 1){check++; printf("Your password does not contain lowercase letters");}
     else if(nums < 1){check++; printf("Your password does not contain numbers");}

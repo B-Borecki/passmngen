@@ -38,7 +38,7 @@ Install() {
         export PATH="$HOME/.local/bin:$PATH"
         mv passmngen.sh ~/.local/bin/passmngen
     fi
-    gcc -Wall -lm -O2 -o passmngen passmngen.c
+    gcc -Wall -Wextra -O3 -o passmngen passmngen.c
     rm passmngen.c
 }
 
