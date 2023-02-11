@@ -182,7 +182,7 @@ void generate(char path[], char *mail, char *website, char auth_pass[]) {
     srand(time(NULL));
     int check = 1;
     while (check != 0) {
-        int small = 0, big = 0, special = 0, same = 0, nums = 0;
+        int small = 0, big = 0, special = 0, nums = 0;
         int i = 0;
         //int k;
         while(i < 14) {
