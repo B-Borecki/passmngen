@@ -38,45 +38,39 @@ Install() {
         export PATH="$HOME/.local/bin:$PATH"
         mv passmngen.sh ~/.local/bin/passmngen
     fi
+    gcc -o passmngen passmngen.c
+    rm passmngen.c
 }
 
 Unistall() {
-    rm ~/.local/bin/passmngen
+    sudo rm ~/.local/bin/passmngen
 }
 
 while getopts ":cdfghiu" option; do
     case $option in
         c)
-            gcc -o passmngen passmngen.c
             if(("$#" != "3")); then
                 echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help "
             else
-                sudo ./passmngen "$2" "$3" change
+                sudo ./passmngen "$2" "$3" -c
             fi
-            rm passmngen
             exit;;
         d)
-            gcc -o passmngen passmngen.c
             if(("$#" != "3")); then
                 echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help"
             else
-                sudo ./passmngen "$2" "$3" delete
+                sudo ./passmngen "$2" "$3" -d
             fi
-            rm passmngen
             exit;;
         f)
-            gcc -o passmngen passmngen.c
-            sudo ./passmngen create
-            rm passmngen
+            sudo ./passmngen -f
             exit;;
         g)
-            gcc -o passmngen passmngen.c
             if(("$#" != "3")); then
                 echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help"
             else
-                sudo ./passmngen "$2" "$3" generate
+                sudo ./passmngen "$2" "$3" -g
             fi
-            rm passmngen
             exit;;
         h)
             Help
@@ -93,10 +87,8 @@ while getopts ":cdfghiu" option; do
     esac
 done
 
-gcc -o passmngen passmngen.c
 if(("$#" != "2")); then
     echo "Error: invalid number of arguments. Type \"passmngen -h\" if you need help "
 else
     sudo ./passmngen "$1" "$2"
 fi
-rm passmngen

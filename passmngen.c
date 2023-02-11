@@ -3,6 +3,48 @@
 #include <string.h>
 #include <time.h>
 
+void decrypt_auth(char word[]) {
+    int direction = 1;
+    char pass[] = "*&a($8F@";
+    int pom;
+    int passlen = strlen(pass);
+    int wordlen = strlen(word);
+    int j = 0;
+    if (passlen == 1) direction = 0;
+    for (int i = 0; i < wordlen; i++) {
+        if(word[i] == 32) pom = 39 - pass[j];
+        else pom = word[i] - pass[j];
+        if(pom < 1) pom = 126 + pom;
+        else pom = 32 + pom;
+        word[i] = pom;
+        j = j + direction;
+        if (j == passlen-1 && passlen != 1) direction = -1;
+        else if(j == 0 && passlen != 1) direction = 1;
+    }
+}
+
+void encrypt_auth(char word[]) {
+    int direction = 1;
+    char pass[] = "*&a($8F@";
+    int pom;
+    int wordlen = strlen(word);
+    int passlen = strlen(pass);
+    int j = 0;
+    if (passlen == 1) direction = 0;
+    for (int i = 0; i < wordlen; i++) {
+        pom = word[i] - 32 + pass[j]- 32;
+        if (pom > 94) {
+            pom = pom - 94;
+        }
+        pom = pom + 32;
+        if(pom == 39) pom = 32;
+        word[i] = pom;
+        j = j + direction;
+        if (j == passlen-1 && passlen != 1) direction = -1;
+        else if(j == 0 && passlen != 1) direction = 1;
+    }
+}
+
 void decrypt_pass(char *pass, char word[]) {
     int direction = 1;
     int pom;
@@ -11,7 +53,8 @@ void decrypt_pass(char *pass, char word[]) {
     int j = 0;
     if (passlen == 1) direction = 0;
     for (int i = 0; i < wordlen; i++) {
-        pom = word[i] - pass[j];
+        if(word[i] == 32) pom = 39 - pass[j];
+        else pom = word[i] - pass[j];
         if(pom < 1) pom = 126 + pom;
         else pom = 32 + pom;
         word[i] = pom;
@@ -33,6 +76,7 @@ void encrypt_pass(char *pass, char word[]) {
             pom = pom - 94;
         }
         pom = pom + 32;
+        if(pom == 39) pom = 32;
         word[i] = pom;
         j = j + direction;
         if (j == passlen-1) j = 0;
@@ -47,7 +91,8 @@ void decrypt_web(char *pass, char *word) {
     int j = passlen - 1;
     if (passlen == 1) direction = 0;
     for (int i = 0; i < wordlen; i++) {
-        pom = word[i] - pass[j];
+        if(word[i] == 32) pom = 39 - pass[j];
+        else pom = word[i] - pass[j];
         if(pom < 1) pom = 126 + pom;
         else pom = 32 + pom;
         word[i] = pom;
@@ -70,12 +115,14 @@ void encrypt_web(char *pass, char *word) {
             pom = pom - 94;
         }
         pom = pom + 32;
+        if(pom == 39) pom = 32;
         word[i] = pom;
         j = j + direction;
         if (j == passlen-1 && passlen != 1) direction = -1;
         else if(j == 0 && passlen != 1) direction = 1;
     }
 }
+
 
 void decrypt_mail(char pass[], char *word) {
     int j = 0;
@@ -85,7 +132,8 @@ void decrypt_mail(char pass[], char *word) {
     int wordlen = strlen(word);
     if (passlen == 1) direction = 0;
     for (int i = 0; i < wordlen; i++) {
-        pom = word[i] - pass[j];
+        if(word[i] == 32) pom = 39 - pass[j];
+        else pom = word[i] - pass[j];
         if(pom < 1) pom = 126 + pom;
         else pom = 32 + pom;
         word[i] = pom;
@@ -108,6 +156,7 @@ void encrypt_mail(char pass[], char *word) {
             pom = pom - 94;
         }
         pom = pom + 32;
+        if(pom == 39) pom = 32;
         word[i] = pom;
         j = j + direction;
         if (j == passlen-1 && passlen != 1) direction = -1;
@@ -116,14 +165,15 @@ void encrypt_mail(char pass[], char *word) {
 }
 
 void delete(char path[], char *mail, char *website) {
-    char command[255] = "sudo echo \"$(grep -v \"";
+    char command[255] = "sudo grep -vF \'";
     strcat(command, mail);
     strcat(command, " ");
     strcat(command, website);
-    strcat(command, " \" ");
+    strcat(command, " \' ");
     strcat(command, path);
-    strcat(command, ")\" > ");
-    strcat(command, path);
+    strcat(command, " | sudo tee B > /dev/null; sudo cat B | sudo tee ");
+    strcat(command,path);
+    strcat(command, " > /dev/null; sudo rm B");
     system(command);
 }
 
@@ -164,6 +214,7 @@ int get_access(char password[]) {
     printf("Enter Passmngen authentication password: ");
     scanf("%s", ans);
     getchar();
+    encrypt_auth(ans);
     if(strcmp(ans, password) != 0) return 1;
     return 0;
 
@@ -350,9 +401,10 @@ void create_p455() {
     char password[255];
     printf("Create an authentication password for Passmngen to secure password database (YOU MUST REMEMBER THIS PASSWORD TO BE ABLE TO ACCESS YOUR ACCOUNTS!!!): ");
     scanf("%s", password);
-    char command3[255] = "echo ";
+    encrypt_auth(password);
+    char command3[255] = "echo \'";
     strcat(command3, password);
-    strcat(command3, " > ");
+    strcat(command3, "\' > ");
     strcat(command3, path);
     strcat(command3, "/.pass/P455");
     system(command3);
@@ -363,7 +415,10 @@ int main(int argc, char *argv[]){
     //checking if PATH file exists
     if(path_file_exists(PATH) == 1) return 1;
     //creating new password file if user run program with -c option or PATH file is empty
-    if((argc == 2 && strcmp(argv[1],"create") == 0) || path_empty(PATH) == 1){ create_p455(); return 0;}
+    if((argc == 2 && strcmp(argv[1],"-f") == 0) || path_empty(PATH) == 1) {
+        create_p455();
+        return 0;
+    }
     //checking if PATH file stores property path to password file
     char path[255];
     fscanf(PATH, "%[^\n]", path);
@@ -382,12 +437,15 @@ int main(int argc, char *argv[]){
 
     char *mail = argv[1];
     char *website = argv[2];
+    decrypt_auth(auth_pass);
     encrypt_web(mail, website);
     encrypt_mail(auth_pass, mail);
+
     if(argc == 3 && search_password(path, mail, website) == 0) {
         print_password(path, mail, website, auth_pass);
         return 0;
     }
+
     if(argc == 3) {
         char ans;
         decrypt_mail(auth_pass, mail);
@@ -401,13 +459,15 @@ int main(int argc, char *argv[]){
         put_to_P455(path, mail, website, auth_pass);
         return 0;
     }
-    if(argc == 4 && strcmp(argv[3],"change") == 0) {
+
+    if(argc == 4 && strcmp(argv[3],"-c") == 0) {
         delete(path, mail, website);
         printf("\n\n");
         put_to_P455(path, mail, website, auth_pass);
         return 0;
     }
-    if(argc == 4 && strcmp(argv[3],"generate") == 0) {
+
+    if(argc == 4 && strcmp(argv[3],"-g") == 0) {
         if(search_password(path, mail, website) == 0) {
             printf("\n\nPassword already exists. If you need help run \"passmngen -h\"");
             return 1;
@@ -415,11 +475,17 @@ int main(int argc, char *argv[]){
         generate(path, mail, website, auth_pass);
         return 0;
     }
-    if(argc == 4 && strcmp(argv[3],"delete") == 0) {
+
+    if(argc == 4 && strcmp(argv[3],"-d") == 0) {
+        if(search_password(path, mail, website) == 1) {
+            printf("\n\nPassword doesn't exists. If you need help run \"passmngen -h\"");
+            return 1;
+        }
         delete(path, mail, website);
         decrypt_mail(auth_pass, mail);
         decrypt_web(mail, website);
-        printf("\n\nThe password for %s on %s has been removed from the database", mail, website);
+        printf("\n\nPassword for %s on %s has been removed from the database", mail, website);
+        return 0;
     }
 
     return 0;
